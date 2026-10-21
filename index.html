@@ -1,0 +1,156 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alerte Magasin</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0; font-family: Arial, sans-serif;
+  background: #f1f5f9; color: #172033;
+}
+header {
+  background: #14213d; color: white;
+  text-align: center; padding: 25px 15px;
+}
+header h1 { margin: 0 0 8px; }
+main { max-width: 600px; margin: 25px auto; padding: 0 15px; }
+section {
+  background: white; padding: 20px; margin-bottom: 18px;
+  border-radius: 14px; box-shadow: 0 3px 12px #00000010;
+}
+label { display: block; font-weight: bold; margin: 15px 0 7px; }
+input, select {
+  width: 100%; padding: 12px; font-size: 16px;
+  border: 1px solid #cbd5e1; border-radius: 8px;
+  background: white;
+}
+button {
+  width: 100%; padding: 14px; margin-top: 15px;
+  border: 0; border-radius: 9px; font-size: 16px;
+  font-weight: bold; cursor: pointer;
+}
+#send { background: #d62828; color: white; }
+#sound { background: #e2e8f0; color: #14213d; }
+#stop { background: #18794e; color: white; }
+#status { line-height: 1.5; overflow-wrap: anywhere; }
+.note { font-size: 13px; color: #64748b; line-height: 1.5; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🔔 Alerte Magasin</h1>
+  <p>La bonne info, à la bonne personne.</p>
+</header>
+<main>
+  <section>
+    <h2>🚨 Envoyer une alerte</h2>
+    <label for="sender">Mon prénom</label>
+    <input id="sender" placeholder="Ex. : Alex" maxlength="30">
+
+    <label for="recipient">Destinataire</label>
+    <select id="recipient">
+      <option value="equipe">📣 Toute l'équipe</option>
+      <option value="collegue">👤 Un collègue précis</option>
+    </select>
+
+    <div id="colleagueBox" hidden>
+      <label for="colleague">Prénom du collègue</label>
+      <input id="colleague" placeholder="Ex. : Sam" maxlength="30">
+    </div>
+
+    <label for="reason">Motif</label>
+    <select id="reason">
+      <option>Besoin de renfort en rayon</option>
+      <option>Besoin d'aide en caisse</option>
+      <option>Demande d'un responsable</option>
+      <option>Client à accompagner</option>
+      <option>Urgence magasin</option>
+      <option>Autre demande</option>
+    </select>
+
+    <button id="send">🚨 Déclencher une alerte de test</button>
+    <p id="status" role="status">Prêt.</p>
+    <p class="note">Cette première version teste l'interface sur cet appareil. Les alertes entre téléphones seront configurées ensuite.</p>
+  </section>
+
+  <section>
+    <h2>🔊 Sonnerie</h2>
+    <p>Teste le son sur cet appareil.</p>
+    <button id="sound">▶ Tester la sonnerie</button>
+    <button id="stop" hidden>✅ J'ai pris connaissance de l'alerte</button>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+let audioContext;
+let alarmTimer;
+
+$('recipient').addEventListener('change', () => {
+  $('colleagueBox').hidden = $('recipient').value !== 'collegue';
+});
+
+function beep() {
+  try {
+    audioContext = audioContext ||
+      new (window.AudioContext || window.webkitAudioContext)();
+    if (audioContext.state === 'suspended') audioContext.resume();
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    oscillator.type = 'sawtooth';
+    oscillator.frequency.value = 880;
+    gain.gain.value = 0.12;
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+    oscillator.start();
+    oscillator.stop(audioContext.currentTime + 0.3);
+  } catch (e) {
+    $('status').textContent = 'Le son ne fonctionne pas sur ce navigateur.';
+  }
+}
+
+function startAlarm() {
+  clearInterval(alarmTimer);
+  beep();
+  alarmTimer = setInterval(beep, 1000);
+  $('stop').hidden = false;
+}
+
+$('sound').addEventListener('click', () => {
+  startAlarm();
+  $('status').textContent =
+    '🔊 Sonnerie en cours. Clique sur le bouton vert pour arrêter.';
+});
+
+$('stop').addEventListener('click', () => {
+  clearInterval(alarmTimer);
+  $('stop').hidden = true;
+  $('status').textContent = '✅ Alerte acquittée sur cet appareil.';
+});
+
+$('send').addEventListener('click', () => {
+  const sender = $('sender').value.trim();
+  const target = $('recipient').value === 'equipe'
+    ? "toute l'équipe" : $('colleague').value.trim();
+  const reason = $('reason').value;
+
+  if (!sender) {
+    $('status').textContent = '⚠️ Indique ton prénom.';
+    $('sender').focus();
+    return;
+  }
+  if (!target) {
+    $('status').textContent = '⚠️ Indique le prénom du collègue.';
+    return;
+  }
+  $('status').textContent =
+    '🧪 Test préparé par ' + sender + ', pour ' + target +
+    '. Motif : ' + reason +
+    '. La transmission entre téléphones reste à configurer.';
+  startAlarm();
+});
+</script>
+</body>
+</html>
