@@ -185,6 +185,53 @@
     const appFirebase = firebase.initializeApp(firebaseConfig);
     const auth = appFirebase.auth();
     const db = appFirebase.database();
+    
+let messaging = null;
+
+try {
+  messaging = firebase.messaging(appFirebase);
+} catch (error) {
+  console.warn("Notifications non disponibles sur cet appareil.", error);
+}
+
+async function registerForPush() {
+  if (!messaging || !currentUser) return;
+  if (!("Notification" in window) || !("serviceWorker" in navigator)) return;
+
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") return;
+
+    const sw = await navigator.serviceWorker.register(
+      "./firebase-messaging-sw.js"
+    );
+
+    const token = await messaging.getToken({
+      vapidKey: "BGoJbfGX9QN0bwmiaXIgM5KmkmpW3WHJX-0fmw83pbkSKRzYyOzy-x9fFp790t9Wwmeg3N3eM2NIF8p-cp2hnh0",
+      serviceWorkerRegistration: sw
+    });
+
+    if (!token) return;
+
+    const tokensRef = db.ref("deviceTokens/" + currentUser.uid);
+    const existing = await tokensRef
+      .orderByChild("token")
+      .equalTo(token)
+      .once("value");
+
+    if (!existing.exists()) {
+      await tokensRef.push().set({
+        token: token,
+        updatedAt: firebase.database.ServerValue.TIMESTAMP
+      });
+    }
+
+    console.log("Appareil inscrit aux notifications.");
+  } catch (error) {
+    console.error("Inscription aux notifications impossible :", error);
+  }
+}
+
     const secondaryApp = firebase.initializeApp(firebaseConfig, "secondary");
     const secondaryAuth = secondaryApp.auth();
 
@@ -597,7 +644,10 @@
     });
 
     auth.onAuthStateChanged(user => {
-      if (user && !currentUser) startApp(user);
+      if (user && !currentUser) {
+  startApp(user);
+  registerForPush();
+}
       if (!user && currentUser) {
         stopAppListeners();
         $("app").classList.add("hidden");
