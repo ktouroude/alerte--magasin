@@ -615,7 +615,10 @@ try {
   const result = await response.json();
 
   if (!response.ok) {
-    throw new Error(result.error || "Erreur de notification");
+    throw new Error(
+  (result.error || "Erreur de notification") +
+  (result.diagnostic ? " : " + result.diagnostic : "")
+);
   }
 
   showStatus("appStatus", "Alerte envoyée.", "ok");
