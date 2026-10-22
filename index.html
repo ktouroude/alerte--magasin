@@ -5,86 +5,604 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Alerte Magasin</title>
   <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0; font-family: Arial, sans-serif; color: #202938;
-      background: #f2f5f9;
+    :root {
+      font-family: Arial, sans-serif;
+      color: #202938;
+      background: #f3f5f8;
     }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
     header {
-      background: #17365d; color: white; padding: 22px 16px;
+      background: #17365d;
+      color: white;
+      padding: 20px;
       text-align: center;
     }
-    header h1 { margin: 0 0 6px; }
-    main { max-width: 760px; margin: 22px auto; padding: 0 14px; }
+    header h1 { margin: 0 0 6px; font-size: 26px; }
+    header p { margin: 0; opacity: .85; }
+    main { max-width: 850px; margin: 22px auto; padding: 0 14px 30px; }
     .card {
-      background: white; border-radius: 14px; padding: 20px;
-      margin-bottom: 16px; box-shadow: 0 3px 14px #172b4d12;
+      background: white;
+      padding: 20px;
+      margin-bottom: 16px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px #0000000d;
     }
-    h2 { margin-top: 0; font-size: 20px; }
-    label { display: block; font-weight: bold; margin: 13px 0 6px; }
-    input, select {
-      width: 100%; padding: 12px; border: 1px solid #cbd5e1;
-      border-radius: 8px; font-size: 16px; background: white;
+    h2 { font-size: 20px; margin: 0 0 16px; }
+    label { display: block; font-weight: 600; margin: 12px 0 6px; }
+    input, textarea, select {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd2dc;
+      border-radius: 8px;
+      font: inherit;
+      background: white;
     }
+    textarea { min-height: 95px; resize: vertical; }
     button {
-      border: 0; border-radius: 8px; padding: 12px 15px;
-      font-size: 16px; font-weight: bold; cursor: pointer;
+      border: 0;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      background: #1769aa;
+      color: white;
       margin-top: 12px;
     }
     button:disabled { opacity: .5; cursor: not-allowed; }
-    .primary { background: #1769aa; color: white; width: 100%; }
-    .danger { background: #b42318; color: white; }
-    .secondary { background: #e5edf5; color: #17365d; }
+    button.secondary { background: #526174; }
+    button.danger { background: #b42318; }
+    button.success { background: #18794e; }
+    .full { width: 100%; }
     .hidden { display: none !important; }
-    .muted { color: #657286; font-size: 14px; }
-    .status { padding: 10px; border-radius: 8px; margin-top: 12px; }
-    .error { background: #fee4e2; color: #912018; }
-    .success { background: #dcfae6; color: #05603a; }
-    .alert {
-      border: 1px solid #f0b4ac; background: #fff4f2;
-      border-radius: 10px; padding: 14px; margin: 12px 0;
-    }
-    .alert h3 { margin: 0 0 8px; }
-    .alert p { margin: 6px 0; }
-    .alert button { margin-right: 8px; }
-    .tag { font-size: 12px; font-weight: bold; text-transform: uppercase; }
-    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-    .row > * { flex: 1; min-width: 120px; }
+    .muted { color: #667085; font-size: 14px; }
+    .status { margin: 12px 0; padding: 11px; border-radius: 8px; }
+    .status.error { background: #fff0ef; color: #a32118; }
+    .status.ok { background: #eaf8ef; color: #17663b; }
     .member {
-      display: flex; justify-content: space-between; align-items: center;
-      gap: 12px; border-top: 1px solid #e5eaf0; padding: 12px 0;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 9px 0;
+      border-bottom: 1px solid #edf0f4;
     }
-    .member button { margin: 0; }
-    footer { text-align: center; color: #657286; font-size: 12px; padding: 12px; }
+    .member input { width: auto; }
+    .member label { margin: 0; font-weight: normal; flex: 1; }
+    .alert {
+      border: 1px solid #e0e5ec;
+      border-left: 5px solid #1769aa;
+      border-radius: 9px;
+      padding: 14px;
+      margin: 12px 0;
+      overflow-wrap: anywhere;
+    }
+    .alert.pending { border-left-color: #d97706; background: #fffaf0; }
+    .alert h3 { margin: 0 0 8px; font-size: 17px; }
+    .alert p { white-space: pre-wrap; margin: 8px 0; }
+    .tag { font-size: 12px; font-weight: bold; color: #526174; }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .row button { margin-top: 8px; }
+    .topline { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .topline h2 { margin-bottom: 0; }
+    .member-actions { display: flex; gap: 8px; align-items: center; }
+    .member-actions button { padding: 8px 10px; margin: 0; }
+    .checkline { display: flex; align-items: center; gap: 8px; margin: 12px 0; }
+    .checkline input { width: auto; }
+    footer { text-align: center; color: #667085; font-size: 12px; padding: 10px; }
   </style>
 </head>
 <body>
-<header>
-  <h1>🔔 Alerte Magasin</h1>
-  <div>Une équipe informée, un magasin qui roule.</div>
-</header>
+  <header>
+    <h1>🔔 Alerte Magasin</h1>
+    <p>La bonne information, au bon moment.</p>
+  </header>
 
-<main>
-  <section class="card" id="loginCard">
-    <h2>Connexion à l'équipe</h2>
-    <form id="loginForm">
-      <label for="email">Adresse e-mail</label>
-      <input id="email" type="email" autocomplete="username" required>
-      <label for="password">Mot de passe</label>
-      <input id="password" type="password" autocomplete="current-password" required>
-      <button class="primary" type="submit">Se connecter</button>
-    </form>
-    <p class="muted">L'accès est réservé aux membres autorisés par l'administrateur.</p>
-    <div id="loginMessage" aria-live="polite"></div>
-  </section>
+  <main>
+    <section id="loginCard" class="card">
+      <h2>Connexion</h2>
+      <form id="loginForm">
+        <label for="email">Adresse e-mail</label>
+        <input id="email" type="email" autocomplete="username" required>
+        <label for="password">Mot de passe</label>
+        <input id="password" type="password" autocomplete="current-password" required>
+        <button class="full" type="submit">Se connecter</button>
+      </form>
+      <div id="loginStatus" aria-live="polite"></div>
+    </section>
 
-  <section id="app" class="hidden">
-    <div class="card">
-      <div class="row">
-        <div>
-          <h2 style="margin-bottom:5px">Bonjour <span id="currentName">!</span></h2>
-          <div class="muted" id="accountInfo"></div>
+    <section id="app" class="hidden">
+      <div class="card">
+        <div class="topline">
+          <div>
+            <h2 id="welcome">Bonjour !</h2>
+            <p class="muted">Connecté à Alerte Magasin</p>
+          </div>
+          <button id="logoutBtn" class="secondary">Déconnexion</button>
         </div>
-        <button class="secondary" id="logoutBtn">Déconnexion</button>
+        <div id="appStatus" aria-live="polite"></div>
       </div>
-      <button class="secondary" id="soundTestBtn
+
+      <section class="card">
+        <h2>📣 Envoyer une alerte</h2>
+        <label for="alertMessage">Message</label>
+        <textarea id="alertMessage" maxlength="500" placeholder="Ex. : Besoin d'aide en rayon chaussures." required></textarea>
+        <div class="row">
+          <button id="allBtn" class="secondary" type="button">Sélectionner tout le monde</button>
+          <button id="noneBtn" class="secondary" type="button">Tout désélectionner</button>
+        </div>
+        <p class="muted">Choisis les destinataires ci-dessous. Tu ne peux pas t'envoyer une alerte à toi-même.</p>
+        <div id="recipientList"></div>
+        <button id="sendBtn" class="full" type="button">Envoyer l'alerte</button>
+      </section>
+
+      <section class="card">
+        <div class="topline">
+          <h2>🚨 Alertes reçues et envoyées</h2>
+          <button id="soundBtn" class="secondary" type="button">Activer le son</button>
+        </div>
+        <p class="muted">Les alertes qui te sont destinées sonnent jusqu'à leur accusé de réception, tant que la page reste ouverte et que le navigateur autorise le son.</p>
+        <div id="alertsList"><p class="muted">Chargement des alertes…</p></div>
+      </section>
+
+      <section id="adminCard" class="card hidden">
+        <h2>⚙️ Administration</h2>
+        <p class="muted">Crée les comptes de l'équipe ou désactive un membre qui ne doit plus accéder à l'application.</p>
+        <form id="memberForm">
+          <label for="memberName">Nom du membre</label>
+          <input id="memberName" maxlength="80" required>
+          <label for="memberEmail">Adresse e-mail du membre</label>
+          <input id="memberEmail" type="email" required>
+          <label for="memberPassword">Mot de passe provisoire (6 caractères minimum)</label>
+          <input id="memberPassword" type="password" minlength="6" autocomplete="new-password" required>
+          <button type="submit">Créer le compte</button>
+        </form>
+        <div id="adminStatus" aria-live="polite"></div>
+        <h3>Membres de l'équipe</h3>
+        <div id="adminMembers">Chargement des membres…</div>
+      </section>
+    </section>
+  </main>
+
+  <footer>Alerte Magasin · Application interne</footer>
+
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCNW8rUoMMW3mg11KX09B8E0J7jlU5LS4",
+      authDomain: "alerte-magasin.firebaseapp.com",
+      databaseURL: "https://alerte-magasin-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "alerte-magasin",
+      storageBucket: "alerte-magasin.firebasestorage.app",
+      messagingSenderId: "22011236626",
+      appId: "1:22011236626:web:17b0c360cb8f1fc03c23cb"
+    };
+
+    const appFirebase = firebase.initializeApp(firebaseConfig);
+    const auth = appFirebase.auth();
+    const db = appFirebase.database();
+    const secondaryApp = firebase.initializeApp(firebaseConfig, "secondary");
+    const secondaryAuth = secondaryApp.auth();
+
+    const $ = id => document.getElementById(id);
+    let currentUser = null;
+    let currentMember = null;
+    let members = {};
+    let alerts = {};
+    let alertListener = null;
+    let memberListener = null;
+    let soundTimer = null;
+    let audioContext = null;
+    let soundEnabled = false;
+    let soundAlertIds = new Set();
+
+    function showStatus(id, message, kind) {
+      const el = $(id);
+      el.textContent = message || "";
+      el.className = message ? "status " + (kind || "ok") : "";
+    }
+
+    function safeText(value) {
+      return String(value == null ? "" : value);
+    }
+
+    function dateLabel(timestamp) {
+      if (!timestamp) return "À l'instant";
+      return new Date(timestamp).toLocaleString("fr-FR");
+    }
+
+    function activeMembers() {
+      return Object.entries(members).filter(([uid, m]) =>
+        m && m.active === true && uid !== (currentUser && currentUser.uid)
+      );
+    }
+
+    function unlockSound() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        if (!audioContext) audioContext = new AudioCtx();
+        if (audioContext.state === "suspended") audioContext.resume();
+        soundEnabled = true;
+        $("soundBtn").textContent = "Son activé ✓";
+        playBeep();
+      } catch (e) {
+        console.warn("Son indisponible", e);
+      }
+    }
+
+    function playBeep() {
+      if (!soundEnabled || !audioContext) return;
+      try {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        oscillator.type = "sine";
+        oscillator.frequency.value = 880;
+        gain.gain.value = 0.12;
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.35);
+      } catch (e) {
+        console.warn("Lecture du son impossible", e);
+      }
+    }
+
+    function updateSound() {
+      const pending = Object.entries(alerts).filter(([id, a]) =>
+        a && a.targetUids &&
+        a.targetUids[currentUser.uid] === true &&
+        !(a.acknowledgements && a.acknowledgements[currentUser.uid] === true)
+      );
+      soundAlertIds = new Set(pending.map(([id]) => id));
+      if (soundTimer) {
+        clearInterval(soundTimer);
+        soundTimer = null;
+      }
+      if (soundEnabled && pending.length) {
+        playBeep();
+        soundTimer = setInterval(() => {
+          if (soundAlertIds.size) playBeep();
+        }, 2500);
+      }
+    }
+
+    function renderRecipients() {
+      const list = $("recipientList");
+      list.innerHTML = "";
+      const available = activeMembers();
+      if (!available.length) {
+        list.innerHTML = '<p class="muted">Aucun autre membre actif pour le moment.</p>';
+        return;
+      }
+      available.forEach(([uid, member]) => {
+        const line = document.createElement("div");
+        line.className = "member";
+        const check = document.createElement("input");
+        check.type = "checkbox";
+        check.id = "recipient-" + uid;
+        check.value = uid;
+        check.className = "recipientCheck";
+        const label = document.createElement("label");
+        label.htmlFor = check.id;
+        label.textContent = safeText(member.name || member.email || "Membre");
+        line.append(check, label);
+        list.appendChild(line);
+      });
+    }
+
+    function renderAlerts() {
+      const list = $("alertsList");
+      list.innerHTML = "";
+      const ordered = Object.entries(alerts).sort((a, b) =>
+        (b[1].createdAt || 0) - (a[1].createdAt || 0)
+      );
+      if (!ordered.length) {
+        list.innerHTML = '<p class="muted">Aucune alerte pour le moment.</p>';
+        return;
+      }
+
+      ordered.forEach(([id, a]) => {
+        if (!a) return;
+        const targeted = a.targetUids && a.targetUids[currentUser.uid] === true;
+        const sentByMe = a.senderUid === currentUser.uid;
+        if (!targeted && !sentByMe) return;
+
+        const acknowledged = a.acknowledgements &&
+          a.acknowledgements[currentUser.uid] === true;
+        const card = document.createElement("div");
+        card.className = "alert" + (targeted && !acknowledged ? " pending" : "");
+
+        const title = document.createElement("h3");
+        title.textContent = targeted && !acknowledged
+          ? "🔔 Nouvelle alerte"
+          : (sentByMe ? "📤 Alerte envoyée" : "✅ Alerte reçue");
+        card.appendChild(title);
+
+        const meta = document.createElement("div");
+        meta.className = "tag";
+        const senderName = a.senderName || "Membre";
+        meta.textContent = senderName + " · " + dateLabel(a.createdAt);
+        card.appendChild(meta);
+
+        const message = document.createElement("p");
+        message.textContent = safeText(a.message);
+        card.appendChild(message);
+
+        if (targeted) {
+          const state = document.createElement("p");
+          state.className = "muted";
+          state.textContent = acknowledged
+            ? "Tu as confirmé la réception."
+            : "En attente de ton accusé de réception.";
+          card.appendChild(state);
+
+          if (!acknowledged) {
+            const ack = document.createElement("button");
+            ack.className = "success";
+            ack.textContent = "J'ai bien reçu";
+            ack.addEventListener("click", async () => {
+              ack.disabled = true;
+              try {
+                await db.ref("alerts/" + id + "/acknowledgements/" + currentUser.uid).set(true);
+                unlockSound();
+                showStatus("appStatus", "Réception confirmée.", "ok");
+              } catch (e) {
+                showStatus("appStatus", "Impossible de confirmer : " + e.message, "error");
+                ack.disabled = false;
+              }
+            });
+            card.appendChild(ack);
+          }
+        }
+
+        if (sentByMe) {
+          const recipients = Object.keys(a.targetUids || {});
+          const confirmed = recipients.filter(uid =>
+            a.acknowledgements && a.acknowledgements[uid] === true
+          ).length;
+          const progress = document.createElement("p");
+          progress.className = "muted";
+          progress.textContent = "Réceptions confirmées : " + confirmed + " / " + recipients.length;
+          card.appendChild(progress);
+        }
+        list.appendChild(card);
+      });
+    }
+
+    async function loadMembers() {
+      const snap = await db.ref("members").once("value");
+      members = snap.val() || {};
+      const me = members[currentUser.uid];
+      if (!me || me.active !== true) {
+        await auth.signOut();
+        throw new Error("Ce compte n'est pas activé dans Alerte Magasin.");
+      }
+      currentMember = me;
+      $("welcome").textContent = "Bonjour " + (me.name || currentUser.email || "!");
+      $("adminCard").classList.toggle("hidden", me.role !== "admin");
+      renderRecipients();
+      if (me.role === "admin") renderAdminMembers();
+    }
+
+    function renderAdminMembers() {
+      const list = $("adminMembers");
+      list.innerHTML = "";
+      Object.entries(members).forEach(([uid, member]) => {
+        if (!member) return;
+        const row = document.createElement("div");
+        row.className = "member";
+        const details = document.createElement("div");
+        details.style.flex = "1";
+        const name = document.createElement("strong");
+        name.textContent = safeText(member.name || "Sans nom");
+        const info = document.createElement("div");
+        info.className = "muted";
+        info.textContent = safeText(member.email || "") +
+          " · " + (member.role === "admin" ? "Administrateur" : "Membre") +
+          " · " + (member.active === true ? "Actif" : "Désactivé");
+        details.append(name, info);
+        row.appendChild(details);
+
+        if (uid !== currentUser.uid && member.role !== "admin") {
+          const btn = document.createElement("button");
+          btn.className = member.active === true ? "danger" : "success";
+          btn.textContent = member.active === true ? "Désactiver" : "Réactiver";
+          btn.addEventListener("click", async () => {
+            btn.disabled = true;
+            try {
+              await db.ref("members/" + uid + "/active").set(member.active !== true);
+              showStatus("adminStatus",
+                member.active === true ? "Membre désactivé." : "Membre réactivé.", "ok");
+              await loadMembers();
+            } catch (e) {
+              showStatus("adminStatus", "Modification impossible : " + e.message, "error");
+              btn.disabled = false;
+            }
+          });
+          row.appendChild(btn);
+        }
+        list.appendChild(row);
+      });
+    }
+
+    async function startApp(user) {
+      currentUser = user;
+      $("loginCard").classList.add("hidden");
+      $("app").classList.remove("hidden");
+      showStatus("appStatus", "Connexion en cours…", "ok");
+
+      try {
+        await loadMembers();
+        if (memberListener) db.ref("members").off("value", memberListener);
+        memberListener = snap => {
+          members = snap.val() || {};
+          currentMember = members[currentUser.uid];
+          if (!currentMember || currentMember.active !== true) {
+            auth.signOut();
+            return;
+          }
+          $("welcome").textContent = "Bonjour " + (currentMember.name || currentUser.email || "!");
+          $("adminCard").classList.toggle("hidden", currentMember.role !== "admin");
+          renderRecipients();
+          if (currentMember.role === "admin") renderAdminMembers();
+        };
+        db.ref("members").on("value", memberListener);
+
+        if (alertListener) db.ref("alerts").off("value", alertListener);
+        alertListener = snap => {
+          alerts = snap.val() || {};
+          renderAlerts();
+          updateSound();
+        };
+        db.ref("alerts").on("value", alertListener, error => {
+          showStatus("appStatus", "Erreur de lecture des alertes : " + error.message, "error");
+        });
+        showStatus("appStatus", "Tu es connecté.", "ok");
+      } catch (e) {
+        showStatus("loginStatus", e.message || "Impossible de charger le compte.", "error");
+        $("app").classList.add("hidden");
+        $("loginCard").classList.remove("hidden");
+      }
+    }
+
+    function stopAppListeners() {
+      if (alertListener) db.ref("alerts").off("value", alertListener);
+      if (memberListener) db.ref("members").off("value", memberListener);
+      alertListener = null;
+      memberListener = null;
+      if (soundTimer) clearInterval(soundTimer);
+      soundTimer = null;
+      alerts = {};
+      members = {};
+      currentMember = null;
+      currentUser = null;
+    }
+
+    $("loginForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      unlockSound();
+      showStatus("loginStatus", "Connexion en cours…", "ok");
+      try {
+        const credential = await auth.signInWithEmailAndPassword(
+          $("email").value.trim(),
+          $("password").value
+        );
+        await startApp(credential.user);
+      } catch (e) {
+        showStatus("loginStatus", "Connexion impossible : " + e.message, "error");
+      }
+    });
+
+    $("logoutBtn").addEventListener("click", async () => {
+      stopAppListeners();
+      await auth.signOut();
+      $("app").classList.add("hidden");
+      $("loginCard").classList.remove("hidden");
+      $("password").value = "";
+      showStatus("loginStatus", "Tu es déconnecté.", "ok");
+    });
+
+    $("soundBtn").addEventListener("click", () => {
+      unlockSound();
+      updateSound();
+    });
+
+    $("allBtn").addEventListener("click", () => {
+      document.querySelectorAll(".recipientCheck").forEach(c => c.checked = true);
+    });
+
+    $("noneBtn").addEventListener("click", () => {
+      document.querySelectorAll(".recipientCheck").forEach(c => c.checked = false);
+    });
+
+    $("sendBtn").addEventListener("click", async () => {
+      unlockSound();
+      const message = $("alertMessage").value.trim();
+      const selected = Array.from(document.querySelectorAll(".recipientCheck:checked"))
+        .map(c => c.value);
+      if (!message) {
+        showStatus("appStatus", "Écris un message avant d'envoyer.", "error");
+        return;
+      }
+      if (!selected.length) {
+        showStatus("appStatus", "Choisis au moins un destinataire.", "error");
+        return;
+      }
+      const targetUids = {};
+      selected.forEach(uid => targetUids[uid] = true);
+      $("sendBtn").disabled = true;
+      try {
+        await db.ref("alerts").push({
+          message,
+          senderUid: currentUser.uid,
+          senderName: currentMember.name || currentUser.email,
+          createdAt: firebase.database.ServerValue.TIMESTAMP,
+          targetUids,
+          acknowledgements: {}
+        });
+        $("alertMessage").value = "";
+        document.querySelectorAll(".recipientCheck").forEach(c => c.checked = false);
+        showStatus("appStatus", "Alerte envoyée.", "ok");
+      } catch (e) {
+        showStatus("appStatus", "Envoi impossible : " + e.message, "error");
+      } finally {
+        $("sendBtn").disabled = false;
+      }
+    });
+
+    $("memberForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      if (!currentMember || currentMember.role !== "admin") {
+        showStatus("adminStatus", "Accès réservé aux administrateurs.", "error");
+        return;
+      }
+      const name = $("memberName").value.trim();
+      const email = $("memberEmail").value.trim();
+      const password = $("memberPassword").value;
+      if (!name || !email || password.length < 6) {
+        showStatus("adminStatus", "Vérifie le nom, l'e-mail et le mot de passe (6 caractères minimum).", "error");
+        return;
+      }
+      const submit = $("memberForm").querySelector('button[type="submit"]');
+      submit.disabled = true;
+      showStatus("adminStatus", "Création du compte…", "ok");
+      let createdUser = null;
+      try {
+        const result = await secondaryAuth.createUserWithEmailAndPassword(email, password);
+        createdUser = result.user;
+        await db.ref("members/" + createdUser.uid).set({
+          name,
+          email,
+          role: "member",
+          active: true
+        });
+        await secondaryAuth.signOut();
+        $("memberForm").reset();
+        await loadMembers();
+        showStatus("adminStatus", "Compte créé. Communique les identifiants au membre de façon sécurisée.", "ok");
+      } catch (e) {
+        try { await secondaryAuth.signOut(); } catch (_) {}
+        const detail = createdUser
+          ? " Le compte de connexion a été créé, mais son inscription dans la liste des membres a échoué. Contacte l'administrateur avant de réessayer."
+          : "";
+        showStatus("adminStatus", "Création impossible : " + e.message + detail, "error");
+      } finally {
+        submit.disabled = false;
+      }
+    });
+
+    auth.onAuthStateChanged(user => {
+      if (user && !currentUser) startApp(user);
+      if (!user && currentUser) {
+        stopAppListeners();
+        $("app").classList.add("hidden");
+        $("loginCard").classList.remove("hidden");
+      }
+    });
+  </script>
+</body>
+</html>
