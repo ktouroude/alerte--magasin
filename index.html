@@ -584,17 +584,50 @@ async function registerForPush() {
       selected.forEach(uid => targetUids[uid] = true);
       $("sendBtn").disabled = true;
       try {
-        await db.ref("alerts").push({
-          message,
-          senderUid: currentUser.uid,
-          senderName: currentMember.name || currentUser.email,
-          createdAt: firebase.database.ServerValue.TIMESTAMP,
-          targetUids,
-          acknowledgements: {}
-        });
-        $("alertMessage").value = "";
-        document.querySelectorAll(".recipientCheck").forEach(c => c.checked = false);
-        showStatus("appStatus", "Alerte envoyée.", "ok");
+       
+const alertRef = db.ref("alerts").push();
+
+await alertRef.set({
+  message,
+  senderUid: currentUser.uid,
+  senderName: currentMember.name || currentUser.email,
+  createdAt: firebase.database.ServerValue.TIMESTAMP,
+  targetUids,
+  acknowledgements: {}
+});
+
+$("alertMessage").value = "";
+document.querySelectorAll(".recipientCheck").forEach(c => c.checked = false);
+
+try {
+  const response = await fetch(
+    "https://alerte-magasin-push.k-touroude.workers.dev/",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + await currentUser.getIdToken()
+      },
+      body: JSON.stringify({ alertId: alertRef.key })
+    }
+  );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.error || "Erreur de notification");
+  }
+
+  showStatus("appStatus", "Alerte envoyée.", "ok");
+} catch (pushError) {
+  console.error("Erreur de notification :", pushError);
+  showStatus(
+    "appStatus",
+    "Alerte enregistrée, mais notification à distance non confirmée.",
+    "error"
+  );
+}
+
       } catch (e) {
         showStatus("appStatus", "Envoi impossible : " + e.message, "error");
       } finally {
